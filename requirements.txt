@@ -1,8 +1,11 @@
 # Librería principal para captura de audio del sistema
 soundcard>=0.4.2
 
-# Procesamiento numérico (numpy 2.x no es compatible con scipy actual)
-numpy>=1.21.0,<2.0.0
+# Procesamiento numérico
+numpy>=1.21.0
 
-# Procesamiento de señales y escritura de archivos WAV
-scipy>=1.7.0
+# Librería profesional para lectura/escritura de audio (mejor calidad que scipy)
+soundfile>=0.12.1
+
+# Procesamiento de audio profesional con efectos de estudio
+pedalboard>=0.9.0

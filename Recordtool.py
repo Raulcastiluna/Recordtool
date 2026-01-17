@@ -1,11 +1,12 @@
 """
 Script para grabar el audio interno del sistema Windows
-Requiere: pip install soundcard numpy scipy
+Requiere: pip install soundcard numpy soundfile pedalboard
 """
 
 import soundcard as sc
 import numpy as np
-from scipy.io import wavfile
+import soundfile as sf
+from pedalboard import Pedalboard, Compressor, Gain, Limiter, HighpassFilter
 from datetime import datetime
 import os
 import threading
@@ -77,6 +78,20 @@ def obtener_dispositivo_loopback(dispositivo_seleccionado=None):
             return mic
     return None
 
+def procesar_audio(audio_data, samplerate):
+    """Aplica procesamiento de audio profesional para mejorar la calidad"""
+    # Crear cadena de efectos de audio profesional
+    board = Pedalboard([
+        HighpassFilter(cutoff_frequency_hz=20.0),  # Filtrar ruido subsónico
+        Compressor(threshold_db=-16, ratio=4),     # Compresión dinámica
+        Gain(gain_db=3),                            # Amplificación
+        Limiter(threshold_db=-1.0)                  # Prevenir distorsión
+    ])
+    
+    # Aplicar efectos
+    audio_procesado = board(audio_data.T, samplerate)
+    return audio_procesado.T
+
 def grabar_audio_interno(duracion_segundos=10, frecuencia_muestreo=44100, dispositivo=None):
     """
     Graba el audio interno del sistema
@@ -109,7 +124,7 @@ def grabar_audio_interno(duracion_segundos=10, frecuencia_muestreo=44100, dispos
             data = mic.record(numframes=int(frecuencia_muestreo * duracion_segundos))
         
         # Convertir a formato adecuado para guardar
-        data = np.array(data)
+        data = np.array(data, dtype=np.float32)
         
         # Si es estéreo, mantener ambos canales
         if len(data.shape) > 1:
@@ -117,16 +132,16 @@ def grabar_audio_interno(duracion_segundos=10, frecuencia_muestreo=44100, dispos
         else:
             print(f"📊 Grabación mono: {data.shape}")
         
-        # Normalizar y convertir a int16
-        data = data / np.max(np.abs(data))  # Normalizar
-        data = (data * 32767).astype(np.int16)
+        # Aplicar procesamiento de audio profesional
+        print("🎛️  Aplicando procesamiento de audio...")
+        data = procesar_audio(data, frecuencia_muestreo)
         
         # Generar nombre de archivo con timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         nombre_archivo = f"grabacion_interna_{timestamp}.wav"
         
-        # Guardar archivo WAV
-        wavfile.write(nombre_archivo, frecuencia_muestreo, data)
+        # Guardar archivo WAV con soundfile (mayor calidad)
+        sf.write(nombre_archivo, data, frecuencia_muestreo, subtype='PCM_24')
         
         ruta_completa = os.path.abspath(nombre_archivo)
         print(f"\n✅ Grabación completada!")
@@ -136,7 +151,7 @@ def grabar_audio_interno(duracion_segundos=10, frecuencia_muestreo=44100, dispos
     except Exception as e:
         print(f"\n❌ Error durante la grabación: {str(e)}")
         print("\n💡 Asegúrate de tener instaladas las dependencias:")
-        print("   pip install soundcard numpy scipy")
+        print("   pip install soundcard numpy soundfile pedalboard")
 
 def calcular_rms(audio_data):
     """Calcula el RMS (Root Mean Square) del audio para detectar volumen"""
@@ -188,24 +203,22 @@ def grabar_con_deteccion_pausas(umbral_silencio=0.003, duracion_pausa=1.0, frecu
         stop_flag = threading.Event()
         
         def guardar_archivo(data, numero):
-            """Guarda el audio en un archivo WAV"""
+            """Guarda el audio en un archivo WAV con procesamiento profesional"""
             if len(data) == 0:
                 return None
                 
             data = np.concatenate(data, axis=0)
+            data = np.array(data, dtype=np.float32)
             
-            # Normalizar y convertir a int16
-            max_val = np.max(np.abs(data))
-            if max_val > 0:
-                data = data / max_val
-            data = (data * 32767).astype(np.int16)
+            # Aplicar procesamiento de audio profesional
+            data = procesar_audio(data, frecuencia_muestreo)
             
             # Generar nombre de archivo
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             nombre_archivo = f"grabacion_{timestamp}_parte{numero:03d}.wav"
             
-            # Guardar
-            wavfile.write(nombre_archivo, frecuencia_muestreo, data)
+            # Guardar con soundfile (mayor calidad)
+            sf.write(nombre_archivo, data, frecuencia_muestreo, subtype='PCM_24')
             
             ruta_completa = os.path.abspath(nombre_archivo)
             tamano_kb = os.path.getsize(nombre_archivo) / 1024
@@ -294,7 +307,7 @@ def grabar_con_deteccion_pausas(umbral_silencio=0.003, duracion_pausa=1.0, frecu
         import traceback
         traceback.print_exc()
         print("\n💡 Asegúrate de tener instaladas las dependencias:")
-        print("   pip install soundcard numpy scipy")
+        print("   pip install soundcard numpy soundfile pedalboard")
 
 def main():
     print("=" * 60)
@@ -359,5 +372,5 @@ def main():
         else:
             print("❌ Opción no válida")
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     main()

@@ -1,6 +1,15 @@
 # 🎵 RecordTool - Grabador de Audio Interno
 
-Script de Python para grabar el audio interno del sistema Windows (lo que escuchas en tu computadora).
+Script de Python para grabar el audio interno del sistema Windows (lo que escuchas en tu computadora) con *procesamiento de audio profesional*.
+
+## ✨ Características Principales
+
+- 🎚️ *Procesamiento de audio profesional* con efectos de estudio
+- 📀 *Grabación en formato PCM 24-bit* (calidad superior a CD)
+- 🎛️ *Compresión dinámica* para equilibrar niveles de volumen
+- 🔊 *Filtrado de ruido* subsónico y protección contra distorsión
+- 🎯 *Detección automática de pausas* para separar archivos
+- 🎤 *Soporte multi-dispositivo* de audio
 
 ## 📋 Requisitos Previos
 
@@ -47,8 +56,15 @@ pip install -r requirements.txt
 O instalar manualmente:
 
 bash
-pip install soundcard numpy scipy
+pip install soundcard numpy soundfile pedalboard
 
+
+### Dependencias instaladas:
+
+- *soundcard*: Captura de audio del sistema
+- *numpy*: Procesamiento numérico de señales
+- *soundfile*: Lectura/escritura de audio de alta calidad
+- *pedalboard*: Efectos de audio profesionales (por Spotify)
 
 ## ▶️ Ejecutar el Programa
 
@@ -239,7 +255,12 @@ RecordTool/
 - Las grabaciones se guardan en la misma carpeta donde se ejecuta el script
 - El formato de salida es WAV sin comprimir
 - La calidad de audio es de 44100 Hz (calidad CD)
-- El programa normaliza automáticamente el audio para evitar distorsión
+- *Formato PCM 24-bit* para mayor rango dinámico
+- El programa aplica *procesamiento de audio profesional*:
+  - *HighpassFilter*: Elimina ruido subsónico (<20Hz)
+  - *Compressor*: Compresión dinámica (ratio 4:1, umbral -16dB)
+  - *Gain*: Amplificación de +3dB
+  - *Limiter*: Protección contra distorsión (umbral -1dB)
 
 ### Formatos de archivo:
 
@@ -255,6 +276,9 @@ RecordTool/
 - Los archivos se guardan *inmediatamente* cuando se detecta una pausa (no al final)
 - No hay límite de tiempo para la grabación continua
 - Los warnings de discontinuidad están *suprimidos automáticamente* para una experiencia más limpia
+- *Procesamiento en tiempo real* con pedalboard (tecnología de Spotify)
+- *PCM 24-bit*: 144 dB de rango dinámico vs 96 dB del 16-bit
+- Cada archivo se procesa automáticamente antes de guardarse
 
 ## 🤝 Contribuciones
 
