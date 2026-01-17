@@ -1,4 +1,8 @@
+# Librería principal para captura de audio del sistema
 soundcard>=0.4.2
-numpy<2.0.0
-scipy
-pydub
+
+# Procesamiento numérico (numpy 2.x no es compatible con scipy actual)
+numpy>=1.21.0,<2.0.0
+
+# Procesamiento de señales y escritura de archivos WAV
+scipy>=1.7.0
